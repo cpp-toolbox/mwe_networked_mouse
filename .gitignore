@@ -1,0 +1,9 @@
+.vscode/
+client/CMakeUserPresets.json
+client/build/
+server/CMakeUserPresets.json
+server/build/
+server/network_logs.txt
+client/network_logs.txt
+
+

@@ -1,0 +1,39 @@
+[submodule "server/src/server_networking"]
+	path = server/src/server_networking
+	url = git@github.com:cpp-toolbox/server_networking.git
+[submodule "server/scripts"]
+	path = server/scripts
+	url = git@github.com:cpp-toolbox/scripts.git
+[submodule "server/src/utility/logger_component"]
+	path = server/src/utility/logger_component
+	url = git@github.com:cpp-toolbox/logger_component.git
+[submodule "client/src/graphics/window"]
+	path = client/src/graphics/window
+	url = git@github.com:cpp-toolbox/window.git
+[submodule "client/src/networking/client_networking"]
+	path = client/src/networking/client_networking
+	url = git@github.com:cpp-toolbox/client_networking.git
+[submodule "client/src/utility/logger_component"]
+	path = client/src/utility/logger_component
+	url = git@github.com:cpp-toolbox/logger_component.git
+[submodule "client/src/utility/fixed_frequency_loop"]
+	path = client/src/utility/fixed_frequency_loop
+	url = https://github.com/cpp-toolbox/fixed_frequency_loop.git
+[submodule "client/src/utility/stopwatch"]
+	path = client/src/utility/stopwatch
+	url = git@github.com:cpp-toolbox/stopwatch.git
+[submodule "server/src/utility/fps_camera"]
+	path = server/src/utility/fps_camera
+	url = git@github.com:cpp-toolbox/fps_camera.git
+[submodule "server/src/graphics/transform"]
+	path = server/src/graphics/transform
+	url = git@github.com:cpp-toolbox/transform.git
+[submodule "server/src/input/mouse"]
+	path = server/src/input/mouse
+	url = git@github.com:cpp-toolbox/mouse.git
+[submodule "server/src/utility/periodic_signal"]
+	path = server/src/utility/periodic_signal
+	url = git@github.com:cpp-toolbox/periodic_signal.git
+[submodule "client/scripts"]
+	path = client/scripts
+	url = git@github.com:cpp-toolbox/scripts.git

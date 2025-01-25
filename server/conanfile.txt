@@ -1,0 +1,9 @@
+[requires]
+enet/1.3.18
+spdlog/1.14.1
+glm/cci.20230113
+[generators]
+CMakeDeps
+CMakeToolchain
+[layout]
+cmake_layout
