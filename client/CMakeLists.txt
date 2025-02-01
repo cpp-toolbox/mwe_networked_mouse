@@ -10,6 +10,9 @@ find_package(enet)
 find_package(spdlog)
 find_package(glad)
 find_package(glfw3)
-target_link_libraries(${PROJECT_NAME} enet::enet spdlog::spdlog glad::glad glfw)
+find_package(stb)
+find_package(glm)
+find_package(nlohmann_json)
+target_link_libraries(${PROJECT_NAME} enet::enet spdlog::spdlog glad::glad glfw stb::stb glm::glm nlohmann_json::nlohmann_json)
 
 

@@ -37,3 +37,42 @@
 [submodule "client/scripts"]
 	path = client/scripts
 	url = git@github.com:cpp-toolbox/scripts.git
+[submodule "client/assets/shaders"]
+	path = client/assets/shaders
+	url = git@github.com:cpp-toolbox/shaders.git
+[submodule "client/src/graphics/vertex_geometry"]
+	path = client/src/graphics/vertex_geometry
+	url = git@github.com:cpp-toolbox/vertex_geometry.git
+[submodule "client/src/graphics/shader_standard"]
+	path = client/src/graphics/shader_standard
+	url = git@github.com:cpp-toolbox/shader_standard.git
+[submodule "client/src/graphics/batcher"]
+	path = client/src/graphics/batcher
+	url = git@github.com:cpp-toolbox/batcher.git
+[submodule "client/src/graphics/shader_cache"]
+	path = client/src/graphics/shader_cache
+	url = git@github.com:cpp-toolbox/shader_cache.git
+[submodule "client/src/graphics/fps_camera"]
+	path = client/src/graphics/fps_camera
+	url = git@github.com:cpp-toolbox/fps_camera.git
+[submodule "client/src/utility/transform"]
+	path = client/src/utility/transform
+	url = git@github.com:cpp-toolbox/transform.git
+[submodule "client/src/input/mouse"]
+	path = client/src/input/mouse
+	url = git@github.com:cpp-toolbox/mouse.git
+[submodule "client/src/graphics/texture_packer"]
+	path = client/src/graphics/texture_packer
+	url = git@github.com:cpp-toolbox/texture_packer.git
+[submodule "client/src/utility/fs_utils"]
+	path = client/src/utility/fs_utils
+	url = git@github.com:cpp-toolbox/fs_utils.git
+[submodule "client/src/graphics/cube_map"]
+	path = client/src/graphics/cube_map
+	url = git@github.com:cpp-toolbox/cube_map.git
+[submodule "client/src/graphics/draw_info"]
+	path = client/src/graphics/draw_info
+	url = git@github.com:cpp-toolbox/draw_info.git
+[submodule "client/src/utility/unique_id_generator"]
+	path = client/src/utility/unique_id_generator
+	url = git@github.com:cpp-toolbox/unique_id_generator.git

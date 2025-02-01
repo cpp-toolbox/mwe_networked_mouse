@@ -1,0 +1,24 @@
+[1mdiff --git a/client/src/graphics/vertex_geometry b/client/src/graphics/vertex_geometry[m
+[1m--- a/client/src/graphics/vertex_geometry[m
+[1m+++ b/client/src/graphics/vertex_geometry[m
+[36m@@ -1 +1 @@[m
+[31m-Subproject commit 854d9986fa98857f1897ddedc689ced8ed137cab[m
+[32m+[m[32mSubproject commit 854d9986fa98857f1897ddedc689ced8ed137cab-dirty[m
+[1mdiff --git a/client/src/networking/client_networking b/client/src/networking/client_networking[m
+[1m--- a/client/src/networking/client_networking[m
+[1m+++ b/client/src/networking/client_networking[m
+[36m@@ -1 +1 @@[m
+[31m-Subproject commit 71dad9a5df289a1de927bd56fd05ecf3d399c1a8[m
+[32m+[m[32mSubproject commit 71dad9a5df289a1de927bd56fd05ecf3d399c1a8-dirty[m
+[1mdiff --git a/server/src/server_networking b/server/src/server_networking[m
+[1m--- a/server/src/server_networking[m
+[1m+++ b/server/src/server_networking[m
+[36m@@ -1 +1 @@[m
+[31m-Subproject commit bbe74c2e29d0f94b52bd3676e1465b50187f995e[m
+[32m+[m[32mSubproject commit bbe74c2e29d0f94b52bd3676e1465b50187f995e-dirty[m
+[1mdiff --git a/server/src/utility/fps_camera b/server/src/utility/fps_camera[m
+[1m--- a/server/src/utility/fps_camera[m
+[1m+++ b/server/src/utility/fps_camera[m
+[36m@@ -1 +1 @@[m
+[31m-Subproject commit 44d6c1fa78ce4c0d85911399d8d99e80d1a722f1[m
+[32m+[m[32mSubproject commit 44d6c1fa78ce4c0d85911399d8d99e80d1a722f1-dirty[m

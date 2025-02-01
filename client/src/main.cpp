@@ -9,6 +9,17 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "graphics/window/window.hpp"
+#include "graphics/shader_cache/shader_cache.hpp"
+#include "graphics/fps_camera/fps_camera.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#include "graphics/texture_packer/texture_packer.hpp"
+
+#include <filesystem>
+
+#include "graphics/cube_map/cube_map.hpp"
+#include "graphics/batcher/generated/batcher.hpp"
 
 unsigned int SCREEN_WIDTH = 800;
 unsigned int SCREEN_HEIGHT = 600;
@@ -50,6 +61,13 @@ int main(){
 
     GLFWwindow *window = initialize_glfw_glad_and_return_window(SCREEN_WIDTH, SCREEN_HEIGHT, "glfw window", false,
                                                                 false, false);
+
+    std::vector<ShaderType> rq_shaders = {ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED};   
+
+    ShaderCache shader_cache(rq_shaders);
+
+    Batcher batcher(shader_cache);
+
     glfwSetCursorPosCallback(window, cursor_position_callback);
 
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -68,7 +86,27 @@ int main(){
     network.initialize_network();
     network.attempt_to_connect_to_server();
 
+    shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED, ShaderUniformVariable::LOCAL_TO_WORLD, glm::mat4(1));
+    shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED, ShaderUniformVariable::WORLD_TO_CAMERA, glm::mat4(1));
+
     std::vector<GameUpdate> game_updates_this_tick;
+
+    FPSCamera fps_camera();
+
+    const std::filesystem::path textures_directory = "assets";
+    std::filesystem::path output_dir = std::filesystem::path("assets") / "packed_textures";
+    int container_side_length = 1024;
+
+    TexturePacker texture_packer(textures_directory, output_dir, container_side_length);
+
+    shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED,
+                             ShaderUniformVariable::PACKED_TEXTURE_BOUNDING_BOXES,
+                             texture_packer.texture_index_to_bounding_box);
+
+    std::filesystem::path cube_map_dir = std::filesystem::path("assets") / "skybox";
+    std::string file_extension = "png";
+
+    CubeMap skybox(cube_map_dir, file_extension, texture_packer);
 
     std::function<void(double)> rate_limited_func = [&](double dt){ 
         network.send_packet(&mouse_update, sizeof(MouseUpdate), false); // false for UDP?
@@ -80,13 +118,38 @@ int main(){
             GameUpdate game_update;
             std::memcpy(&game_update, pws.data.data(), sizeof(GameUpdate));
             game_updates_this_tick.push_back(game_update);
-            // fps_camera.mouse_callback(game_update.mouse_x_pos, mu.mouse_y_pos); for later
-            // fps_camera.transform.print();
+            fps_camera.transform.rotation.x = game_update.pitch;
+            fps_camera.transform.rotation.y = game_update.yaw;
+            fps_camera.transform.print();
             std::cout << "yaw = " << game_update.yaw << std::endl << "pitch = " << game_update.pitch << std::endl;
         }
+        shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED, ShaderUniformVariable::CAMERA_TO_CLIP, fps_camera.get_view_matrix());  
+        
+        // draw skybox
+        // glDepthMask(GL_FALSE);
+        // glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth
+        //                         // buffer's content
+        std::vector<std::tuple<int, const IVPTexturePacked &>> skybox_faces = {
+            {0, skybox.top_face},  {1, skybox.bottom_face}, {2, skybox.right_face},
+            {3, skybox.left_face}, {4, skybox.front_face},  {5, skybox.back_face}};
+
+        for (const auto &[id, face] : skybox_faces) {
+            std::vector<int> ptis(face.xyz_positions.size(), face.packed_texture_index);
+            std::vector<int> ptbbi(face.xyz_positions.size(), face.packed_texture_bounding_box_index);
+
+            // Call to the actual function
+            batcher.cwl_v_transformation_texture_packed_shader_batcher.queue_draw(
+                id, face.indices, face.xyz_positions, ptis, face.packed_texture_coordinates, ptbbi);
+        }
+
+        batcher.cwl_v_transformation_texture_packed_shader_batcher.draw_everything();
+
+        // glDepthFunc(GL_LESS);
+        // glDepthMask(GL_TRUE);
         glfwSwapBuffers(window);
         glfwPollEvents();
     };
+
     std::function<bool()> termination_condition_func = [&](){
         return glfwWindowShouldClose(window);
     };
