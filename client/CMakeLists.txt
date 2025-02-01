@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(mwe_networking_client)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
@@ -14,5 +15,3 @@ find_package(stb)
 find_package(glm)
 find_package(nlohmann_json)
 target_link_libraries(${PROJECT_NAME} enet::enet spdlog::spdlog glad::glad glfw stb::stb glm::glm nlohmann_json::nlohmann_json)
-
-

@@ -60,7 +60,7 @@ int main(){
             std::memcpy(&mu, pws.data.data(), sizeof(MouseUpdate));
             mouse_updates_this_tick.push_back(mu);
             fps_camera.mouse_callback(mu.mouse_x_pos, mu.mouse_y_pos);
-            fps_camera.transform.print();
+            std::cout << fps_camera.transform.get_string_repr() << std::endl;
         }
         GameUpdate game_update;
         game_update.pitch = fps_camera.transform.rotation.x;

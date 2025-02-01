@@ -13,7 +13,10 @@
 #include "graphics/fps_camera/fps_camera.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image.h>
+#include <stb_image_write.h>
+
 #include "graphics/texture_packer/texture_packer.hpp"
 
 #include <filesystem>
@@ -24,14 +27,12 @@
 unsigned int SCREEN_WIDTH = 800;
 unsigned int SCREEN_HEIGHT = 600;
 
-struct MouseUpdate
-{
+struct MouseUpdate {
     float mouse_x_pos;
     float mouse_y_pos;
 };
 
-struct GameUpdate
-{
+struct GameUpdate {
     float yaw;
     float pitch;
 };
@@ -50,19 +51,19 @@ bool on_window_close(sf::RenderWindow& window){
 }
 */
 
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
-{
+void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
     // std::cout << "(" << xpos << ", " << ypos << ")" << std::endl;
     mouse_update.mouse_x_pos = xpos;
     mouse_update.mouse_y_pos = ypos;
 }
 
-int main(){
+int main() {
+    bool start_in_fullscreen = true;
+    bool start_with_mouse_captured = true;
+    GLFWwindow *window = initialize_glfw_glad_and_return_window(SCREEN_WIDTH, SCREEN_HEIGHT, "glfw window",
+                                                                start_in_fullscreen, start_with_mouse_captured, false);
 
-    GLFWwindow *window = initialize_glfw_glad_and_return_window(SCREEN_WIDTH, SCREEN_HEIGHT, "glfw window", false,
-                                                                false, false);
-
-    std::vector<ShaderType> rq_shaders = {ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED};   
+    std::vector<ShaderType> rq_shaders = {ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED};
 
     ShaderCache shader_cache(rq_shaders);
 
@@ -82,53 +83,56 @@ int main(){
     Network network(ip_address, 7777, sinks);
 
     FixedFrequencyLoop update_mouse_xy_position;
-    
+
     network.initialize_network();
     network.attempt_to_connect_to_server();
 
-    shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED, ShaderUniformVariable::LOCAL_TO_WORLD, glm::mat4(1));
-    shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED, ShaderUniformVariable::WORLD_TO_CAMERA, glm::mat4(1));
+    FPSCamera fps_camera;
+
+    shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED, ShaderUniformVariable::LOCAL_TO_WORLD,
+                             glm::mat4(1));
+    shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED, ShaderUniformVariable::CAMERA_TO_CLIP,
+                             fps_camera.get_projection_matrix());
 
     std::vector<GameUpdate> game_updates_this_tick;
 
-    FPSCamera fps_camera();
-
-    const std::filesystem::path textures_directory = "assets";
+    const auto textures_directory = std::filesystem::path("assets");
     std::filesystem::path output_dir = std::filesystem::path("assets") / "packed_textures";
     int container_side_length = 1024;
 
     TexturePacker texture_packer(textures_directory, output_dir, container_side_length);
-
     shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED,
-                             ShaderUniformVariable::PACKED_TEXTURE_BOUNDING_BOXES,
-                             texture_packer.texture_index_to_bounding_box);
+                             ShaderUniformVariable::PACKED_TEXTURE_BOUNDING_BOXES, 1);
 
     std::filesystem::path cube_map_dir = std::filesystem::path("assets") / "skybox";
     std::string file_extension = "png";
 
     CubeMap skybox(cube_map_dir, file_extension, texture_packer);
 
-    std::function<void(double)> rate_limited_func = [&](double dt){ 
+    std::function<void(double)> rate_limited_func = [&](double dt) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         network.send_packet(&mouse_update, sizeof(MouseUpdate), false); // false for UDP?
         MouseUpdate mu;
         std::memcpy(&mu, &mouse_update, sizeof(MouseUpdate));
         std::cout << "(" << mu.mouse_x_pos << ", " << mu.mouse_y_pos << ")" << std::endl;
         std::vector<PacketWithSize> packets = network.get_network_events_received_since_last_tick();
-        for (PacketWithSize pws : packets){
+        for (PacketWithSize pws : packets) {
             GameUpdate game_update;
             std::memcpy(&game_update, pws.data.data(), sizeof(GameUpdate));
             game_updates_this_tick.push_back(game_update);
             fps_camera.transform.rotation.x = game_update.pitch;
             fps_camera.transform.rotation.y = game_update.yaw;
-            fps_camera.transform.print();
             std::cout << "yaw = " << game_update.yaw << std::endl << "pitch = " << game_update.pitch << std::endl;
         }
-        shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED, ShaderUniformVariable::CAMERA_TO_CLIP, fps_camera.get_view_matrix());  
-        
+
+        shader_cache.set_uniform(ShaderType::CWL_V_TRANSFORMATION_TEXTURE_PACKED,
+                                 ShaderUniformVariable::WORLD_TO_CAMERA, fps_camera.get_view_matrix());
+
         // draw skybox
-        // glDepthMask(GL_FALSE);
-        // glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth
-        //                         // buffer's content
+        /*glDepthMask(GL_FALSE);*/
+        /*glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth*/
+        /*                        // buffer's content*/
         std::vector<std::tuple<int, const IVPTexturePacked &>> skybox_faces = {
             {0, skybox.top_face},  {1, skybox.bottom_face}, {2, skybox.right_face},
             {3, skybox.left_face}, {4, skybox.front_face},  {5, skybox.back_face}};
@@ -150,13 +154,10 @@ int main(){
         glfwPollEvents();
     };
 
-    std::function<bool()> termination_condition_func = [&](){
-        return glfwWindowShouldClose(window);
-    };
+    std::function<bool()> termination_condition_func = [&]() { return glfwWindowShouldClose(window); };
 
     // loop needs rate_limited_func and termination condition
     update_mouse_xy_position.start(30, rate_limited_func, termination_condition_func);
-        
 
     return 0;
 }
